@@ -1,0 +1,90 @@
+package com.montjoy.places;
+
+import java.util.List;
+import java.util.Map;
+
+public final class IntegrationSample {
+    private IntegrationSample() {
+    }
+
+    public static void main(String[] args) {
+        String apiKey = System.getenv("MONTJOY_PLACES_API_KEY");
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("Set MONTJOY_PLACES_API_KEY before running the sample.");
+        }
+
+        MontjoyPlaces client = new MontjoyPlaces(apiKey);
+        long suffix = System.currentTimeMillis();
+        String groupName = "sdk-java-" + suffix;
+
+        String groupId = null;
+        String customPlaceId = null;
+
+        try {
+            Models.GroupSingleResponse createdGroup = client.createGroup(new Models.GroupCreateRequest(groupName));
+            groupId = createdGroup.row().groupId();
+            System.out.println("created group=" + createdGroup.row());
+
+            Models.CustomPlaceCreateRequest createPlace = new Models.CustomPlaceCreateRequest(
+                    "SDK Java Test Place " + suffix,
+                    42.3601,
+                    -71.0589)
+                    .groupId(groupId)
+                    .address("1 Beacon St")
+                    .locality("Boston")
+                    .region("MA")
+                    .postcode("02108")
+                    .country("US")
+                    .website("https://example.com/java")
+                    .tags(List.of("sdk", "java"))
+                    .meta(Map.of("source", "integration-sample"));
+
+            Models.CustomPlaceSingleResponse createdPlace = client.createCustomPlace(createPlace);
+            customPlaceId = createdPlace.row().customPlaceId();
+            System.out.println("created custom place=" + createdPlace.row());
+
+            Models.CustomPlaceSingleResponse fetchedPlace = client.getCustomPlace(customPlaceId);
+            System.out.println("fetched custom place=" + fetchedPlace.row());
+
+            Models.CustomPlaceUpdateRequest updatePlace = new Models.CustomPlaceUpdateRequest()
+                    .name("SDK Java Updated Place " + suffix)
+                    .website("https://example.com/java-updated")
+                    .meta(Map.of("source", "integration-sample", "updated", true));
+
+            Models.CustomPlaceSingleResponse updatedPlace = client.updateCustomPlace(customPlaceId, updatePlace);
+            System.out.println("updated custom place=" + updatedPlace.row());
+
+            Models.CustomPlaceSingleResponse hiddenPlace = client.hideCustomPlace(customPlaceId, new Models.CustomPlaceHideRequest(true));
+            System.out.println("hidden custom place=" + hiddenPlace.row());
+
+            Models.CustomPlaceSingleResponse unhiddenPlace = client.hideCustomPlace(customPlaceId, new Models.CustomPlaceHideRequest(false));
+            System.out.println("unhidden custom place=" + unhiddenPlace.row());
+
+            Models.ListCustomPlacesRequest listRequest = new Models.ListCustomPlacesRequest()
+                    .groupId(groupId)
+                    .limit(10)
+                    .includeHidden(true);
+
+            Models.CustomPlacesListResponse listedPlaces = client.listCustomPlaces(listRequest);
+            System.out.println("group custom places=" + listedPlaces.rows().stream().map(Models.CustomPlace::name).toList());
+        } finally {
+            if (customPlaceId != null) {
+                try {
+                    Models.DeleteResponse deletedPlace = client.deleteCustomPlace(customPlaceId);
+                    System.out.println("deleted custom place=" + deletedPlace);
+                } catch (Exception exception) {
+                    System.out.println("cleanup failed for custom place=" + exception.getMessage());
+                }
+            }
+
+            if (groupId != null) {
+                try {
+                    Models.GroupDeleteResponse deletedGroup = client.deleteGroup(groupId);
+                    System.out.println("deleted group=" + deletedGroup);
+                } catch (Exception exception) {
+                    System.out.println("cleanup failed for group=" + exception.getMessage());
+                }
+            }
+        }
+    }
+}
