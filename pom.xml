@@ -1,10 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>com.montjoyplaces</groupId>
-  <artifactId>MontjoyPlaces</artifactId>
+  <artifactId>montjoyplaces</artifactId>
   <version>1.0.0</version>
+  <packaging>jar</packaging>
+
   <name>MontjoyPlaces</name>
   <description>Official Java SDK for the Montjoy Places API.</description>
   <url>https://montjoyplaces.com</url>
@@ -19,9 +22,12 @@
 
   <developers>
     <developer>
-      <name>Montjoy</name>
-      <email>paul@montjoyapp.com</email>
+      <id>pauldemers</id>
+      <name>Paul Demers</name>
+      <email>paul@p2.dev</email>
       <url>https://montjoyplaces.com</url>
+      <organization>Montjoy</organization>
+      <organizationUrl>https://montjoyplaces.com</organizationUrl>
     </developer>
   </developers>
 
@@ -30,8 +36,89 @@
     <url>https://montjoyplaces.com</url>
   </organization>
 
+  <scm>
+    <connection>scm:git:https://github.com/MontjoyPlaces/MontjoyPlaces-Java-SDK.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com:MontjoyPlaces/MontjoyPlaces-Java-SDK.git</developerConnection>
+    <url>https://github.com/MontjoyPlaces/MontjoyPlaces-Java-SDK</url>
+    <tag>HEAD</tag>
+  </scm>
+
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <gpg.keyname>FC4AB5F5A0696AD1</gpg.keyname>
   </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.14.0</version>
+        <configuration>
+          <release>${maven.compiler.release}</release>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.12.0</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>3.2.8</version>
+        <configuration>
+          <gpgArguments>
+            <arg>--pinentry-mode</arg>
+            <arg>loopback</arg>
+          </gpgArguments>
+          <keyname>${gpg.keyname}</keyname>
+        </configuration>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.10.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
